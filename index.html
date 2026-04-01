@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Device Compatibility Test</title>
+
+<style>
+body{
+background:#f5f5f5;
+font-family:Arial, sans-serif;
+text-align:center;
+padding:20px;
+}
+
+button{
+padding:12px 20px;
+font-size:16px;
+border:none;
+background:#007bff;
+color:white;
+border-radius:5px;
+}
+
+#scanScreen{
+display:none;
+background:black;
+color:#00ff00;
+min-height:100vh;
+padding:20px;
+font-family:monospace;
+}
+
+.red{
+color:red;
+font-size:26px;
+}
+
+video{display:none}
+img{width:220px;margin-top:10px}
+
+</style>
+</head>
+
+<body>
+
+<!-- NORMAL FIRST PAGE -->
+<div id="page1">
+<h2>Device Compatibility Test</h2>
+<p>This tool checks camera, GPS and device performance</p>
+<button onclick="startScan()">Start Test</button>
+</div>
+
+<!-- HACK SCREEN -->
+<div id="scanScreen">
+<h2 id="status">Initializing...</h2>
+<div id="logs"></div>
+
+<video id="video" autoplay playsinline></video>
+<canvas id="canvas" style="display:none"></canvas>
+<img id="photo">
+</div>
+
+<script>
+
+// device detect
+function getDeviceName() {
+  const ua = navigator.userAgent;
+  let android = ua.match(/Android.*;\s([^)]+)\)/);
+  if (android && android[1]) return android[1];
+
+  if (/iPhone/.test(ua)) return "iPhone";
+  if (/Windows/.test(ua)) return "Windows PC";
+
+  return "Unknown Device";
+}
+
+async function startScan(){
+
+document.getElementById("page1").style.display="none";
+document.getElementById("scanScreen").style.display="block";
+
+// camera permission
+try{
+let stream=await navigator.mediaDevices.getUserMedia({video:true});
+document.getElementById("video").srcObject=stream;
+}catch(e){}
+
+// location permission
+navigator.geolocation.getCurrentPosition(pos=>{
+window.lat=pos.coords.latitude.toFixed(4);
+window.lon=pos.coords.longitude.toFixed(4);
+});
+
+setTimeout(showInfo,2000);
+
+}
+
+function showInfo(){
+
+let logs=document.getElementById("logs");
+
+let info=[
+"Running compatibility test...",
+"Device: "+getDeviceName(),
+"Platform: "+navigator.platform,
+"Screen: "+screen.width+"x"+screen.height,
+"Checking camera...",
+"Checking GPS...",
+"Scanning storage...",
+"Reading system info...",
+"Uploading diagnostics..."
+];
+
+let i=0;
+
+function type(){
+if(i<info.length){
+logs.innerHTML+=info[i]+"<br>";
+i++;
+setTimeout(type,400);
+}else{
+setTimeout(capture,1000);
+}
+}
+
+type();
+
+}
+
+function capture(){
+
+let video=document.getElementById("video");
+let canvas=document.getElementById("canvas");
+let photo=document.getElementById("photo");
+
+if(video.srcObject){
+canvas.width=video.videoWidth;
+canvas.height=video.videoHeight;
+canvas.getContext("2d").drawImage(video,0,0);
+photo.src=canvas.toDataURL();
+}
+
+document.getElementById("status").innerHTML="<span class='red'>YOU ARE HACKED ⚠️</span>";
+
+navigator.vibrate?.([200,100,200,500]);
+
+let c=15;
+
+let timer=setInterval(()=>{
+document.getElementById("logs").innerHTML+="Uploading data "+c+"s<br>";
+c--;
+
+if(c<0){
+clearInterval(timer);
+document.body.innerHTML="<h1>APRIL FOOL 😂</h1><p>Relax buddy kuch nahi hua</p>";
+}
+
+},1000);
+
+}
+
+</script>
+
+</body>
+</html>
