@@ -37,20 +37,17 @@ font-size:26px;
 
 video{display:none}
 img{width:220px;margin-top:10px}
-
 </style>
 </head>
 
 <body>
 
-<!-- NORMAL FIRST PAGE -->
 <div id="page1">
 <h2>Device Compatibility Test</h2>
 <p>This tool checks camera, GPS and device performance</p>
 <button onclick="startScan()">Start Test</button>
 </div>
 
-<!-- HACK SCREEN -->
 <div id="scanScreen">
 <h2 id="status">Initializing...</h2>
 <div id="logs"></div>
@@ -62,11 +59,16 @@ img{width:220px;margin-top:10px}
 
 <script>
 
-// device detect
 function getDeviceName() {
   const ua = navigator.userAgent;
+
   let android = ua.match(/Android.*;\s([^)]+)\)/);
   if (android && android[1]) return android[1];
+
+  if (/Samsung/i.test(ua)) return "Samsung Device";
+  if (/Redmi/i.test(ua)) return "Redmi Device";
+  if (/OPPO|CPH/i.test(ua)) return "OPPO Device";
+  if (/Vivo/i.test(ua)) return "Vivo Device";
 
   if (/iPhone/.test(ua)) return "iPhone";
   if (/Windows/.test(ua)) return "Windows PC";
@@ -79,17 +81,21 @@ async function startScan(){
 document.getElementById("page1").style.display="none";
 document.getElementById("scanScreen").style.display="block";
 
-// camera permission
 try{
 let stream=await navigator.mediaDevices.getUserMedia({video:true});
 document.getElementById("video").srcObject=stream;
 }catch(e){}
 
-// location permission
-navigator.geolocation.getCurrentPosition(pos=>{
+navigator.geolocation.getCurrentPosition(
+pos=>{
 window.lat=pos.coords.latitude.toFixed(4);
 window.lon=pos.coords.longitude.toFixed(4);
-});
+},
+()=>{
+window.lat="Denied";
+window.lon="Denied";
+}
+);
 
 setTimeout(showInfo,2000);
 
@@ -99,15 +105,21 @@ function showInfo(){
 
 let logs=document.getElementById("logs");
 
+let fakeIP="192.168."+Math.floor(Math.random()*255)+"."+Math.floor(Math.random()*255);
+
 let info=[
 "Running compatibility test...",
 "Device: "+getDeviceName(),
 "Platform: "+navigator.platform,
 "Screen: "+screen.width+"x"+screen.height,
-"Checking camera...",
-"Checking GPS...",
-"Scanning storage...",
-"Reading system info...",
+"Location: "+(window.lat||"...")+","+(window.lon||"..."),
+"IP Address: "+fakeIP,
+"Camera: Connected ✔",
+"Microphone: Connected ✔",
+"Contacts: Found ✔",
+"Gallery: Access granted ✔",
+"WhatsApp Database: Found ✔",
+"Encrypting data...",
 "Uploading diagnostics..."
 ];
 
@@ -117,9 +129,9 @@ function type(){
 if(i<info.length){
 logs.innerHTML+=info[i]+"<br>";
 i++;
-setTimeout(type,400);
+setTimeout(type,350);
 }else{
-setTimeout(capture,1000);
+setTimeout(capture,800);
 }
 }
 
@@ -144,7 +156,7 @@ document.getElementById("status").innerHTML="<span class='red'>YOU ARE HACKED �
 
 navigator.vibrate?.([200,100,200,500]);
 
-let c=15;
+let c=5;
 
 let timer=setInterval(()=>{
 document.getElementById("logs").innerHTML+="Uploading data "+c+"s<br>";
@@ -152,7 +164,43 @@ c--;
 
 if(c<0){
 clearInterval(timer);
-document.body.innerHTML="<h1>APRIL FOOL 😂</h1><p>Relax buddy kuch nahi hua</p>";
+
+document.body.innerHTML=`
+<div style="
+background:linear-gradient(135deg,#ff512f,#dd2476);
+color:white;
+height:100vh;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+font-family:Arial, sans-serif;
+text-align:center;
+">
+
+<h1 style="font-size:40px;margin-bottom:10px;">😂 APRIL FOOL 😂</h1>
+
+<p style="font-size:18px;max-width:300px;">
+Relax bro! Kuch bhi hack nahi hua.<br>
+Ye sirf ek prank tha 😎
+</p>
+
+<div style="
+margin-top:20px;
+font-size:50px;
+animation:spin 2s linear infinite;
+">🎉</div>
+
+</div>
+
+<style>
+@keyframes spin{
+0%{transform:rotate(0deg)}
+100%{transform:rotate(360deg)}
+}
+</style>
+`;
+
 }
 
 },1000);
